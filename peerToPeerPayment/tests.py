@@ -7,7 +7,7 @@ from django.urls import reverse
 client = Client()
 
 
-# NOTE: Jump to line to see test for example runthrough (as per code challenge)
+# NOTE: Jump to line 133 to see test for example runthrough (as per code challenge)
 
 
 class TestCreateUser(TestCase):
