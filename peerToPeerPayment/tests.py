@@ -7,6 +7,9 @@ from django.urls import reverse
 client = Client()
 
 
+# NOTE: Jump to line to see test for example runthrough (as per code challenge)
+
+
 class TestCreateUser(TestCase):
     """ Test that a user can be created"""
 
@@ -125,3 +128,60 @@ class TestTransfer(TestCase):
         response = client.post(reverse('transfer'), invalidData)
         self.assertEqual(response.data, {"error": "insufficient funds"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class TestExampleRunThrough(TestCase):
+    """ 
+
+    Tests Example Run through  
+    As given in the coding challenge requirements
+
+    Example Run through of the app:
+    User A is added to the app
+    User A deposits 10 dollars
+    User B is added to the app
+    User B deposits 20 dollars
+    User B sends 15 dollars to User A
+    User A checks their balance and has 25 dollars
+    User B checks their balance and has 5 dollars
+    User A transfers 25 dollars from their account
+    User A checks their balance and has 0 dollars
+    """
+
+    def test_example_run_through(self):
+
+        # User A is added to the app
+        data = {"email": "userA@gmail.com", "username": "userA"}
+        client.post(reverse('add_user'), data)
+
+        # User A deposits 10 dollars
+        data = {"amount": 10, "username": "userA"}
+        client.post(reverse('deposit'), data)
+
+        # User B is added to the app
+        data = {"email": "userB@gmail.com", "username": "userB"}
+        client.post(reverse('add_user'), data)
+
+        # User B deposits 20 dollars
+        data = {"amount": 20, "username": "userB"}
+        client.post(reverse('deposit'), data)
+
+        # User B sends 15 dollars to User A
+        data = {"amount": 15, "sender_username": "userB", "reciever_username": "userA"}
+        response = client.post(reverse('transfer'), data)
+
+        # UserA checks their balance and has 25 dollars
+        response = client.get(reverse('check_balance', kwargs={"username": "userA"}))
+        self.assertEqual(response.data, {"balance": 25})
+
+        # User B checks their balance and has 5 dollars
+        response = client.get(reverse('check_balance', kwargs={"username": "userB"}))
+        self.assertEqual(response.data, {"balance": 5})
+
+        # User A transfers 25 dollars from their account
+        data = {"amount": 25, "username": "userA"}
+        response = client.post(reverse('withdraw'), data)
+
+        # User A checks their balance and has 0 dollars
+        response = client.get(reverse('check_balance', kwargs={"username": "userA"}))
+        self.assertEqual(response.data, {"balance": 0})
